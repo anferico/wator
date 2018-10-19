@@ -1,0 +1,2 @@
+
+Lo script e i programmi girano correttamente (e permettono di superare tutti i test) su Ubuntu 15.04

@@ -1,0 +1,182 @@
+#!/bin/bash
+#
+# \file       watorscript
+# \author     Francesco Cariaggi
+# \matricola  503146
+#
+#  Si dichiara che il contenuto di questo file e' in ogni sua parte opera
+#  originale dell' autore.
+
+# Riconosce un argomento e lo colloca al suo posto nell'array degli argomenti
+# array argomenti -----> [...|...|...]
+#                          |   |   |_ slot opzione lunga '--help' 
+#                          |   |_____ slot opzione corta ('-f' o '-s')
+#                          |_________ slot filename
+function process_arg()
+{
+	if [ -f $1 ]; then
+		if ! [ ${ARGS[0]} = "empty" ]; then
+			echo "Argument 'filename' was set more than once." >& 2
+			exit 1
+		fi
+	ARGS[0]=$1
+	elif [ $1 = "-f" -o $1 = "-s" ]; then
+		if ! [ ${ARGS[1]} = "empty" ]; then
+			echo "Too many options were specified." >& 2
+			exit 1
+		fi
+	ARGS[1]=$1
+	elif [ $1 = "--help" ]; then
+		if ! [ ${ARGS[2]} = "empty" ]; then
+			echo "Long option '--help' was set more than once." >& 2
+			exit 1
+		fi
+	ARGS[2]=$1
+	else
+		echo "'$1' is not a valid file, or it is an unrecognized option." >& 2
+		exit 1
+	fi
+}
+
+# Verifica la correttezza sintattica del file del pianeta, contando nel frattempo pesci e squali
+function scan_planetfile()
+{
+	# Apro il file in lettura (file descriptor 32)
+	exec 32< $1
+	
+	# Leggo innanzitutto le prime due righe
+	if read -u 32 ROWS; then
+		# Non è un intero positivo?
+		if ! [[ $ROWS =~ ^[1-9][0-9]*$ ]]; then
+			echo "NO" >& 2
+			exit 1
+		fi
+	fi
+	
+	if read -u 32 COLS; then
+		# Non è un intero positivo?
+		if ! [[ $COLS =~ ^[1-9][0-9]*$ ]]; then
+			echo "NO" >& 2
+			exit 1
+		fi
+	fi
+	
+	# Leggo 1 carattere alla volta
+	CHAR_EXPECTED=1
+	BLANK_EXPECTED=0
+	NEWLINE_EXPECTED=0
+	EOF_REACHED=0      # Viene settato a 1 quando ho letto ROWS*COLS caratteri validi
+	IN_ROW_READS=0     # Contatore letture all'interno di una riga
+	ROW_READS=0        # Contatore letture righe intere
+	
+	while read -u 32 -N 1; do
+	
+		if [[ $CHAR_EXPECTED == 1 ]]; then
+			if [[ $EOF_REACHED == 1 ]]; then
+				echo "NO" >& 2
+				exit 1
+			fi
+			
+			case $REPLY in
+				( 'W'|'F'|'S' ) IN_ROW_READS=$(( $IN_ROW_READS+1 ));
+				
+				# Conto pesci/squali
+				if [[ $REPLY == 'F' ]]; then
+					FISHES=$(( $FISHES+1 ))
+				elif [[ $REPLY == 'S' ]]; then
+					SHARKS=$(( $SHARKS+1 )) 
+				fi;
+				
+				if [[ $IN_ROW_READS == $COLS ]]; then # Se ho letto COLS elementi validi nella riga corrente
+					
+					ROW_READS=$(( $ROW_READS+1 ))
+					
+					if [[ $ROW_READS == $ROWS ]];then
+						EOF_REACHED=1
+					fi
+					
+					NEWLINE_EXPECTED=1     # Lo setto anche nel caso dovessi aspettarmi EOF, perché pare
+					CHAR_EXPECTED=0        # che 'read' legga '\n' anche alla fine del file.
+					BLANK_EXPECTED=0
+					# Azzero il contatore per la riga successiva
+					IN_ROW_READS=0
+				else # Se sono ancora nel mezzo dela riga
+					CHAR_EXPECTED=0
+					BLANK_EXPECTED=1
+					NEWLINE_EXPECTED=0
+				fi;;
+				( * ) echo "NO" >& 2; exit 1;;
+			esac
+		elif [[ $BLANK_EXPECTED == 1 ]]; then
+			case $REPLY in
+				( ' ' )
+				CHAR_EXPECTED=1;
+				BLANK_EXPECTED=0;
+				NEWLINE_EXPECTED=0;;
+				( * ) echo "NO" >& 2; exit 1;;
+			esac
+		elif [[ $NEWLINE_EXPECTED == 1 ]]; then
+			if [[ $REPLY == $'\n' ]]; then
+				CHAR_EXPECTED=1
+				BLANK_EXPECTED=0
+				NEWLINE_EXPECTED=0
+			else
+				echo "NO" >& 2
+				exit 1
+			fi
+		fi
+	done
+	
+	# Se ho letto meno righe di quelle specificate (i.e. il numero nella prima riga del file
+	# non corrisponde al numero di righe della matrice)
+	if [[ $ROW_READS != $ROWS ]]; then
+		echo "NO" >& 2
+		exit 1
+	fi
+	
+	# Chiudo il file
+	exec 32>&-
+}
+
+for ((i=0; i<4; i++)); do
+	ARGS[$i]="empty"
+done
+
+for ARG in $@; do
+	process_arg $ARG
+done
+
+if [[ ${ARGS[2]} = "--help" ]]; then
+	echo "Usage: watorscript filename [-f] [-s] [--help]" >& 2
+	echo "" >& 2
+	echo "  filename" >& 2
+	echo "      The file containing informations about the aquatic planet." >& 2
+	echo "  -f" >& 2
+	echo "      Prints the number of fishes in the planet represented in 'filename'." >& 2
+	echo "  -s" >& 2
+	echo "      Prints the number of sharks in the planet represented in 'filename'." >& 2
+	echo "  --help" >& 2
+	echo "      Prints this help message." >& 2
+	echo "" >& 2
+	exit 1
+elif [[ ${ARGS[0]} == "empty" ]]; then
+	echo "No file specified." >& 2
+	exit 1
+fi
+
+FISHES=0
+SHARKS=0
+
+# Verifico la correttezza del file del pianeta e raccolgo informazioni
+scan_planetfile ${ARGS[0]}
+
+# Se non sono presenti le opzioni '-f' o '-s' stampo semplicemente OK
+if [[ ${ARGS[1]} == "empty" ]]; then
+	echo "OK" >& 2
+# Numero pesci
+elif [[ ${ARGS[1]} == "-f" ]]; then
+	echo $FISHES
+# Numero squali
+elif [[ ${ARGS[1]} == "-s" ]]; then
+	echo $SHARKS
+fi
