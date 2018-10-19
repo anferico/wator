@@ -1,5 +1,5 @@
 
-##### ENGLISH ######
+# English
 
 To generate executable files, open the terminal and head to the 'src' directory, then run:
 
@@ -25,7 +25,7 @@ Additional informations on how to use the script can be obtained using the optio
 
 
 
-##### ITALIANO ######
+# Italiano
 
 Per generare gli eseguibili dei programmi, posizionarsi con il terminale sulla directory 'src' ed eseguire:
 
