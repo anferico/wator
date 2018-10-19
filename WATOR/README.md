@@ -14,7 +14,8 @@ With the terminal opened in the directory 'src', you can run the program using t
 
 	./wator planet_file [-n nwork] [-v chronon] [-f dumpfile]
 	
-('planet_file' is any file having the same formatting as 'planet1.dat', 'planet2.dat' and 'planet3.dat')
+'planet_file' is any file having the same formatting as 'planet1.dat', 'planet2.dat' and 'planet3.dat'. 
+The option '-n' is used to specify the number of threads used to perform the simulation. The option '-v' is used to specify the length (in terms of chronons, which are nothing but time ticks) of the simulation. Finally, the option '-f' is used to specify the file where you want to print the aspect of the planet after each chronon.
 
 
 To run the script, execute:
@@ -39,9 +40,13 @@ nella directory 'DATA'. Quest'ultima contiene anche i file 'wator.conf.1', 'wato
 
 Per eseguire il programma lanciare, sempre dalla directory 'src', il comando:
 
-	./wator planet.dat [-n nwork] [-v chronon] [-f dumpfile]
+	./wator planet_file [-n nwork] [-v chronon] [-f dumpfile]
 	
-(Al posto di planet.dat può essere specificato un qualsiasi file con lo stesso formato)
+'planet_file' è un qualunque file avente lo stesso formato di 'planet1.dat', 'planet2.dat' e 'planet3.dat'. 
+L'opzione '-n' serve a specificare il numero di thread da usare per la simulazione. 
+L'opzione '-v' specifica la durata (in chronon, ossia istanti di tempo) della simulazione. 
+Infine, l'opzione '-f' è usata per specificare il file in cui si vuole stampare l'aspetto del pianeta dopo ciascun chronon.
+
 
 Per lanciare lo script, eseguire:
 
