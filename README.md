@@ -32,8 +32,9 @@ Additional informations on how to use the script can be obtained using the optio
 
 ## Istruzioni (Italiano)
 
-Per generare gli eseguibili dei programmi, posizionarsi con il terminale sulla directory 'src' ed eseguire:
+Per generare gli eseguibili dei programmi, eseguire:
 
+	cd src
 	make
 	
 Per cambiare le impostazioni della simulazione, modificare i file 'wator.conf' (che contiene i parametri 
