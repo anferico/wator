@@ -4,8 +4,9 @@ A biological system simulator that investigates how life develops in a toroidal 
 Based on the article "Sharks and fish wage an ecological war on the toroidal planet Wator" by A. K. Dewdney (Scientific American, Vol. 251, No. 6 (December 1984), pp. 14-26)
 
 ## Instructions (English)
-To generate executable files, open the terminal and head to the 'src' directory, then run:
+To generate executable files, open the terminal and run:
 
+	cd src
 	make
 	
 	
